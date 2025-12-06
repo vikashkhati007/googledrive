@@ -1,4 +1,3 @@
-import { google } from "googleapis";
 import * as fs from "fs";
 import * as http from "http";
 import * as url from "url";
@@ -10,6 +9,7 @@ import type {
   TokenData,
 } from "./types";
 import { SCOPES } from "./const";
+import { OAuth2Client } from "./drivers/oauth2-client";
 
 const CREDENTIALS_PATH = "./credentials.json";
 const TOKENS_PATH = "./tokens.json";
@@ -64,11 +64,8 @@ export async function generateCredentialsAndTokens({
     ? (creds as WebCredentials | InstalledCredentials).redirect_uris[0]
     : (creds as GoogleCredentials).redirect_uri;
 
-  const oauth2Client = new google.auth.OAuth2(
-    client_id,
-    client_secret,
-    redirect_uri
-  );
+  // Create OAuth2Client using our lightweight implementation
+  const oauth2Client = new OAuth2Client(credentials, TOKENS_PATH);
 
   // =====================================
   // 3️⃣ REUSE EXISTING TOKENS IF PRESENT
@@ -87,13 +84,13 @@ export async function generateCredentialsAndTokens({
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
-    include_granted_scopes: false, // 🔥 THIS IS THE MAIN FIX
+    include_granted_scopes: false,
     scope: SCOPES,
   });
 
   console.log("\n🌐 Authorize this app by visiting this URL:\n", authUrl, "\n");
 
-  return new Promise((resolve, reject) => {
+  return new Promise<OAuth2Client>((resolve, reject) => {
     const connections = new Set<any>();
 
     const server = http.createServer(async (req, res) => {
@@ -103,8 +100,7 @@ export async function generateCredentialsAndTokens({
           const code = qs.get("code");
           if (!code) throw new Error("No authorization code received");
 
-          const { tokens } = await oauth2Client.getToken(code);
-          oauth2Client.setCredentials(tokens);
+          const tokens = await oauth2Client.getToken(code);
           fs.writeFileSync(TOKENS_PATH, JSON.stringify(tokens, null, 2));
 
           console.log("✅ Tokens saved to tokens.json");

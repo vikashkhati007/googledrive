@@ -1,6 +1,6 @@
 {
   "name": "gdrivekit",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "A lightweight Google Drive toolkit for effortless file management — handle uploads, downloads, and Drive operations in just a few lines of code.",
   "type": "module",
   "main": "dist/index.js",
@@ -41,8 +41,8 @@
   "dependencies": {
     "archiver": "^7.0.1",
     "archiver-zip-encrypted": "^2.0.0",
+    "core-util-is": "^1.0.3",
     "crypto": "^1.0.1",
-    "googleapis": "^164.1.0",
     "update-notifier": "^7.3.1"
   },
   "devDependencies": {

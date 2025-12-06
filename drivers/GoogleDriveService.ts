@@ -26,11 +26,24 @@ const DRIVE_API_BASE = "https://www.googleapis.com/drive/v3";
 const DRIVE_UPLOAD_BASE = "https://www.googleapis.com/upload/drive/v3";
 const SCRIPT_API_BASE = "https://script.googleapis.com/v1";
 
+export interface DriveServiceOptions {
+  /** Path to tokens file (default: ./tokens.json) */
+  tokensPath?: string;
+  /** Whether to auto-save tokens to file (default: true) */
+  autoSaveToFile?: boolean;
+  /** Callback when tokens are refreshed - use this for custom persistence in SSR/serverless */
+  onTokensRefresh?: (tokens: TokenData) => void;
+}
+
 export class GoogleDriveService {
   private oauth2: OAuth2Client;
 
-  constructor(credentials: GoogleCredentials) {
-    this.oauth2 = new OAuth2Client(credentials);
+  constructor(credentials: GoogleCredentials, options?: DriveServiceOptions) {
+    this.oauth2 = new OAuth2Client(credentials, {
+      tokensPath: options?.tokensPath,
+      autoSaveToFile: options?.autoSaveToFile,
+      onTokensRefresh: options?.onTokensRefresh,
+    });
   }
 
   /**
@@ -38,6 +51,35 @@ export class GoogleDriveService {
    */
   public setCredentials(tokens: TokenData): void {
     this.oauth2.setCredentials(tokens);
+  }
+
+  /**
+   * Set callback for when tokens are refreshed
+   * This is the recommended way to persist tokens in SSR/serverless environments
+   */
+  public onTokensRefreshed(callback: (tokens: TokenData) => void): void {
+    this.oauth2.onTokensRefreshed(callback);
+  }
+
+  /**
+   * Check if the current token is expired or about to expire
+   */
+  public isTokenExpired(bufferMinutes: number = 5): boolean {
+    return this.oauth2.isTokenExpired(bufferMinutes);
+  }
+
+  /**
+   * Get current tokens (useful for persistence)
+   */
+  public getTokens(): TokenData {
+    return this.oauth2.getTokens();
+  }
+
+  /**
+   * Manually trigger token refresh
+   */
+  public async refreshToken(): Promise<void> {
+    await this.oauth2.refreshAccessToken();
   }
 
   /**

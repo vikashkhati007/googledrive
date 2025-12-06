@@ -232,7 +232,6 @@ main();
 | `deleteGoogleScript()` | Apps Script project ko Google Drive trash me move kar deta hai                                                                     |
 | `deployGoogleScript()` | Apps Script ka naya version execution API ke liye deploy karta hai (web app deploy nahi)                                           |
 
-
 ## 🔑 Google Apps Script API Enable Karna (Required)
 
 ### 1️⃣ Enable Apps Script API in Google Cloud Console

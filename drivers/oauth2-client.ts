@@ -3,9 +3,22 @@ import type { TokenData, GoogleCredentials } from "../types/index";
 
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 
+export interface OAuth2ClientOptions {
+  /** Path to tokens file (default: ./tokens.json) */
+  tokensPath?: string;
+  /** Whether to auto-save tokens to file (default: true) */
+  autoSaveToFile?: boolean;
+  /** Callback when tokens are refreshed - use this for custom persistence */
+  onTokensRefresh?: (tokens: TokenData) => void;
+}
+
 /**
  * Lightweight OAuth2 client using Bun's native fetch
  * Handles token storage, refresh, and authorization headers
+ *
+ * Token refresh happens automatically when:
+ * - A token is within 5 minutes of expiry
+ * - An API call is made via getAccessToken() or getAuthHeader()
  */
 export class OAuth2Client {
   private accessToken: string = "";
@@ -15,12 +28,19 @@ export class OAuth2Client {
   private redirectUri: string;
   private expiryDate: number = 0;
   private tokensPath: string;
+  private autoSaveToFile: boolean;
   private onTokensRefresh?: (tokens: TokenData) => void;
+  private isRefreshing: boolean = false;
+  private refreshPromise: Promise<void> | null = null;
 
   constructor(
     credentials: GoogleCredentials,
-    tokensPath: string = "./tokens.json"
+    options: OAuth2ClientOptions | string = {}
   ) {
+    // Support legacy string parameter for tokensPath
+    const opts: OAuth2ClientOptions =
+      typeof options === "string" ? { tokensPath: options } : options;
+
     const creds = credentials.web || credentials.installed || credentials;
     this.clientId = creds.client_id!;
     this.clientSecret = creds.client_secret!;
@@ -28,7 +48,9 @@ export class OAuth2Client {
       "redirect_uris" in creds
         ? creds.redirect_uris[0]
         : (credentials as any).redirect_uri || "";
-    this.tokensPath = tokensPath;
+    this.tokensPath = opts.tokensPath || "./tokens.json";
+    this.autoSaveToFile = opts.autoSaveToFile !== false; // Default true
+    this.onTokensRefresh = opts.onTokensRefresh;
   }
 
   /**
@@ -49,6 +71,7 @@ export class OAuth2Client {
 
   /**
    * Get a valid access token, refreshing if expired
+   * Automatically refreshes the token if it's within 5 minutes of expiry
    */
   public async getAccessToken(): Promise<string> {
     // Check if token is expired (with 5 minute buffer)
@@ -57,10 +80,43 @@ export class OAuth2Client {
       this.expiryDate > 0 && now >= this.expiryDate - 5 * 60 * 1000;
 
     if (isExpired && this.refreshToken) {
-      await this.refreshAccessToken();
+      // Prevent concurrent refresh requests
+      if (this.isRefreshing && this.refreshPromise) {
+        await this.refreshPromise;
+      } else {
+        this.isRefreshing = true;
+        this.refreshPromise = this.refreshAccessToken().finally(() => {
+          this.isRefreshing = false;
+          this.refreshPromise = null;
+        });
+        await this.refreshPromise;
+      }
     }
 
     return this.accessToken;
+  }
+
+  /**
+   * Check if the current token is expired or about to expire
+   */
+  public isTokenExpired(bufferMinutes: number = 5): boolean {
+    const now = Date.now();
+    return (
+      this.expiryDate > 0 && now >= this.expiryDate - bufferMinutes * 60 * 1000
+    );
+  }
+
+  /**
+   * Get current tokens (useful for persistence)
+   */
+  public getTokens(): TokenData {
+    return {
+      access_token: this.accessToken,
+      refresh_token: this.refreshToken,
+      expiry_date: this.expiryDate,
+      token_type: "Bearer",
+      scope: "",
+    };
   }
 
   /**
@@ -102,16 +158,31 @@ export class OAuth2Client {
       refresh_token: this.refreshToken,
       expiry_date: this.expiryDate,
       token_type: data.token_type || "Bearer",
-      scope: data.scope,
+      scope: data.scope || "",
     };
 
-    // Save tokens to file
-    fs.writeFileSync(this.tokensPath, JSON.stringify(tokens, null, 2));
-    console.log("🔄 Tokens refreshed and saved");
+    // Save tokens to file if auto-save is enabled
+    if (this.autoSaveToFile) {
+      try {
+        fs.writeFileSync(this.tokensPath, JSON.stringify(tokens, null, 2));
+        console.log("🔄 Tokens refreshed and saved to file");
+      } catch (error) {
+        // File write might fail in serverless environments - that's OK if callback is set
+        console.warn(
+          "⚠️ Could not save tokens to file:",
+          error instanceof Error ? error.message : error
+        );
+      }
+    }
 
-    // Notify callback if set
+    // Always notify callback if set - this is the primary way to persist in SSR/serverless
     if (this.onTokensRefresh) {
-      this.onTokensRefresh(tokens);
+      try {
+        this.onTokensRefresh(tokens);
+        console.log("🔄 Tokens refreshed and callback notified");
+      } catch (error) {
+        console.error("❌ Error in onTokensRefresh callback:", error);
+      }
     }
   }
 

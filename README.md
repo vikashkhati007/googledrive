@@ -99,7 +99,6 @@ All operations are grouped by category under the main `operations` object.
 | `getFileIdByName()`     | Fetch file ID by its name (Exact Match)         |
 | `getCompleteFileInfo()` | Get complete file metadata including all fields |
 | `moveFile()`            | Move file to another folder using file ID       |
-| `moveFileByName()`      | Move file by its name                           |
 | `copyFile()`            | Make a copy of a file in Drive                  |
 | `getImageMetadata()`    | Get image metadata (EXIF data, dimensions)      |
 | `getVideoMetadata()`    | Get video metadata (duration, dimensions)       |

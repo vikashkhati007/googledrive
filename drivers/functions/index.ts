@@ -9,6 +9,7 @@ export * from "./files/updateFileContent";
 export * from "./files/createStream";
 export * from "./files/createStreamfilesandFolder";
 export * from "./files/getAllFilesInParent";
+export * from "./files/moveFile";
 
 export * from "./folders/createFolder";
 

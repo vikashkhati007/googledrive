@@ -12,7 +12,6 @@ import {
   getImageMetadata,
   getVideoMetadata,
   moveFile,
-  moveFileByName,
   copyFile,
   getFileIdByName,
   // JSON Operations
@@ -107,7 +106,6 @@ export const fileOperations = {
   getImageMetadata,
   getVideoMetadata,
   moveFile,
-  moveFileByName,
   copyFile,
 };
 

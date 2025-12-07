@@ -13,7 +13,7 @@ export {
   getImageMetadata,
   getVideoMetadata,
 } from "./01-FileOperation/getFileInfo";
-export { moveFile, moveFileByName } from "./01-FileOperation/moveFile";
+export { moveFile } from "./01-FileOperation/moveFile";
 export { copyFile } from "./01-FileOperation/copyFile";
 export { getFileIdByName } from "./01-FileOperation/getFileIdByName";
 

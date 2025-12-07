@@ -11,7 +11,7 @@
 - 🗂️ Create and organize folders
 - 🔍 Powerful search and filter utilities
 - ⚙️ Batch file operations
-- ⚡ Minimal setup, lightweight, and easy to use
+- ⚡ **Lazy Loading Architecture:** Functions are loaded only when needed.
 - 💡 Works with Node.js and Bun
 
 ---
@@ -35,7 +35,7 @@ bun add gdrivekit
 ### ⚙️ One-Time Setup (Token Generation)
 
 Before you can use Google Drive operations, you must generate **access and refresh tokens**.
-This only needs to be done **once** — the tokens will be stored locally and reused automatically.
+This only needs to be done **once**.
 
 ```ts
 import { generateCredentialsAndTokens } from "gdrivekit";
@@ -49,14 +49,11 @@ await generateCredentialsAndTokens({
 });
 ```
 
-✅ **Run this code once** to authenticate your app and save tokens (usually in `tokens.json`).
-After that, you **don’t need to call it again** unless you delete your tokens or change your Google credentials.
-
 ---
 
 # 🔄 Initializing the Drive Service
 
-Once tokens are generated, you can initialize the Google Drive service and perform file operations:
+Initialize the service and access operations through categorized groups:
 
 ```ts
 import { initDriveService, operations } from "gdrivekit";
@@ -64,11 +61,19 @@ import { initDriveService, operations } from "gdrivekit";
 async function main() {
   initDriveService();
 
-  // Example: Search files by name
-  const files = await operations.searchByName("test");
+  // Example: Search files by name using searchOperations
+  const files = await operations.searchOperations.searchByName("test");
   console.log(files.data?.files);
 
-  // Like that you can use more operations...
+  // Example: Get Folder ID by Name using folderOperations
+  const folder = await operations.folderOperations.getFolderIdByName(
+    "My Documents"
+  );
+  console.log(folder);
+
+  // Example: List all folders using listOperations
+  const allFolders = await operations.listOperations.listAllFolders();
+  console.log(allFolders);
 }
 
 main();
@@ -78,7 +83,9 @@ main();
 
 ## 🧠 Available Operations
 
-### 📁 **File Operations**
+All operations are grouped by category under the main `operations` object.
+
+### 📁 **`operations.fileOperations`**
 
 | Method                  | Description                                     |
 | ----------------------- | ----------------------------------------------- |
@@ -89,38 +96,28 @@ main();
 | `renameFile()`          | Rename an existing file                         |
 | `updateFile()`          | Update file metadata or content                 |
 | `getFileInfo()`         | Get details of a specific file                  |
-| `getFileIdByName()`     | Fetch file ID by its name                       |
+| `getFileIdByName()`     | Fetch file ID by its name (Exact Match)         |
 | `getCompleteFileInfo()` | Get complete file metadata including all fields |
 | `moveFile()`            | Move file to another folder using file ID       |
 | `moveFileByName()`      | Move file by its name                           |
 | `copyFile()`            | Make a copy of a file in Drive                  |
+| `getImageMetadata()`    | Get image metadata (EXIF data, dimensions)      |
+| `getVideoMetadata()`    | Get video metadata (duration, dimensions)       |
 
 ---
 
-### 🗂️ **Metadata Operations**
+### 🗂️ **`operations.folderOperations`**
 
-| Method               | Description                                      |
-| -------------------- | ------------------------------------------------ |
-| `getImageMetadata()` | Get image metadata (EXIF data, dimensions, etc.) |
-| `getVideoMetadata()` | Get video metadata (duration, dimensions, etc.)  |
-
----
-
-### 🗂️ **Folder Operations**
-
-| Method                  | Description                               |
-| ----------------------- | ----------------------------------------- |
-| `createFolder()`        | Create a new folder                       |
-| `deleteFolder()`        | Delete an existing folder                 |
-| `getFolderIdByName()`   | Fetch folder ID by its name               |
-| `listFoldersByName()`   | List all folders with a specific name     |
-| `listAllFolders()`      | List all folders in Drive                 |
-| `listFilesInFolder()`   | List all files within a specific folder   |
-| `listFoldersInFolder()` | List all folders within a specific folder |
+| Method                | Description                               |
+| --------------------- | ----------------------------------------- |
+| `createFolder()`      | Create a new folder                       |
+| `deleteFolder()`      | Delete an existing folder                 |
+| `renameFolder()`      | Rename an existing folder                 |
+| `getFolderIdByName()` | Fetch folder ID by its name (Exact Match) |
 
 ---
 
-### 🔍 **Search Operations**
+### 🔍 **`operations.searchOperations`**
 
 | Method                  | Description                            |
 | ----------------------- | -------------------------------------- |
@@ -134,25 +131,29 @@ main();
 
 ---
 
-### 📋 **List Operations**
+### 📋 **`operations.listOperations`**
 
-| Method                | Description                           |
-| --------------------- | ------------------------------------- |
-| `listFiles()`         | List all files in Drive               |
-| `listRecentFiles()`   | List recently modified or added files |
-| `listPDFs()`          | List all PDF files                    |
-| `listImages()`        | List all image files                  |
-| `listVideos()`        | List all video files                  |
-| `listAudios()`        | List all audio files                  |
-| `listArchives()`      | List all archive files                |
-| `listJSONs()`         | List all json files                   |
-| `listSheets()`        | List all sheet files                  |
-| `listPresentations()` | List all presentation files           |
-| `listDocs()`          | List all docs files                   |
+| Method                  | Description                               |
+| ----------------------- | ----------------------------------------- |
+| `listFiles()`           | List all files in Drive                   |
+| `listRecentFiles()`     | List recently modified or added files     |
+| `listFoldersByName()`   | List all folders with a specific name     |
+| `listAllFolders()`      | List all folders in Drive                 |
+| `listFilesInFolder()`   | List all files within a specific folder   |
+| `listFoldersInFolder()` | List all folders within a specific folder |
+| `listPDFs()`            | List all PDF files                        |
+| `listImages()`          | List all image files                      |
+| `listVideos()`          | List all video files                      |
+| `listAudios()`          | List all audio files                      |
+| `listArchives()`        | List all archive files                    |
+| `listJSONs()`           | List all json files                       |
+| `listSheets()`          | List all sheet files                      |
+| `listPresentations()`   | List all presentation files               |
+| `listDocs()`            | List all docs files                       |
 
 ---
 
-### 🧩 **Batch Operations**
+### 🧩 **`operations.batchOperations`**
 
 | Method                    | Description                          |
 | ------------------------- | ------------------------------------ |
@@ -162,24 +163,24 @@ main();
 
 ---
 
-### 🧰 **Utility Operations**
+### 🧰 **`operations.utilityOperations`**
 
-| Method                           | Description                                                                 |
-| -------------------------------- | --------------------------------------------------------------------------- |
-| `encryptText()`                  | Encrypt plain text using AES-256-GCM with password-based key derivation     |
-| `decryptText()`                  | Decrypt encrypted text using AES-256-GCM with password-based key derivation |
-| `filesAndFoldersToZip()`         | Create a zip archive of folder and multiple files                           |
-| `findDuplicateFilesAndFolders()` | Find duplicate file and folder names in Drive                               |
-| `getFolderTypeBreakdown()`       | Get folder type breakdown (files, subfolders, etc.) in a parent folder      |
-| `getAllFilesInParent()`          | Get all files in a parent folder not including subfolders                   |
-| `shareFile()`                    | Share a file with a user                                                    |
-| `fileExists()`                   | Check if a file exists                                                      |
-| `getStorageQuota()`              | Get storage quota information                                               |
-| `createStream()`                 | Create stream for any Google Drive file (audio, video, image, doc, etc.)    |
+| Method                           | Description                                               |
+| -------------------------------- | --------------------------------------------------------- |
+| `encryptText()`                  | Encrypt plain text using AES-256-GCM                      |
+| `decryptText()`                  | Decrypt encrypted text using AES-256-GCM                  |
+| `filesAndFoldersToZip()`         | Create a zip archive of folder and multiple files         |
+| `findDuplicateFilesAndFolders()` | Find duplicate file and folder names in Drive             |
+| `getFileTypeBreakdown()`         | Get folder type breakdown in a parent folder              |
+| `getAllFilesInParent()`          | Get all files in a parent folder not including subfolders |
+| `shareFile()`                    | Share a file with a user                                  |
+| `fileExists()`                   | Check if a file exists                                    |
+| `getStorageQuota()`              | Get storage quota information                             |
+| `createStream()`                 | Create stream for any Google Drive file                   |
 
 ---
 
-### ❴❵ **Json Operation**
+### ❴❵ **`operations.jsonOperations`**
 
 | Method                       | Description                             |
 | ---------------------------- | --------------------------------------- |
@@ -188,51 +189,51 @@ main();
 | `addJsonKeyValue()`          | Add a new key-value pair to a JSON file |
 | `pushJsonObjectToArray()`    | Push a new object to a JSON array field |
 | `updateJsonFieldAndValues()` | Update an existing field in a JSON file |
-| `selectJsonFieldAndValues()` | Select an existing field in a JSON file |
+| `selectJsonContent()`        | Select content from a JSON file         |
 | `deleteJsonFieldAndKeys()`   | Delete a field from a JSON file         |
 
 ---
 
-### ⚞ **Conversion Operation**
+### ⚞ **`operations.conversionOperations`**
 
-| Method                  | Description                                               |
-| ----------------------- | --------------------------------------------------------- |
-| `convertTextToDocs()`   | Convert a text file (`.txt`) to Google Docs format        |
-| `convertDocsToPdf()`    | Convert a Google Docs file to PDF                         |
-| `convertDocsToWord()`   | Convert a Google Docs file to Microsoft Word (`.docx`)    |
-| `convertDocsToText()`   | Convert a Google Docs file to plain text (`.txt`)         |
-| `convertCsvToSheet()`   | Convert a CSV file to Google Sheets                       |
-| `convertExcelToSheet()` | Convert an Excel file (`.xlsx`) to Google Sheets          |
-| `convertSheetToCsv()`   | Convert a Google Sheet to CSV                             |
-| `convertSheetToPdf()`   | Convert a Google Sheet to PDF                             |
-| `convertPptToSlides()`  | Convert a PowerPoint file (`.pptx`) to Google Slides      |
-| `convertSlidesToPpt()`  | Convert a Google Slides file to PowerPoint (`.pptx`)      |
-| `convertSlidesToPdf()`  | Convert a Google Slides file to PDF                       |
-| `convertPdfToDocs()`    | Convert a PDF file to Google Docs (with OCR if supported) |
-| `convertDrawingToPng()` | Convert a Google Drawing to PNG image                     |
-| `convertDrawingToPdf()` | Convert a Google Drawing to PDF                           |
-
----
-
-### ⚞ **Folder Watcher**
-
-| Method              | Description                                                                                   |
-| ------------------- | --------------------------------------------------------------------------------------------- |
-| `watchFolder()`     | Ek single Google Drive folder ke andar hone wale **add / modify / delete** events detect kare |
-| `watchFolderDeep()` | Pure folder ke andar **subfolders tak** hone wale saare events ko detect kare (recursive)     |
+| Method                  | Description                                |
+| ----------------------- | ------------------------------------------ |
+| `convertTextToDocs()`   | Convert a text file to Google Docs format  |
+| `convertDocsToPdf()`    | Convert a Google Docs file to PDF          |
+| `convertDocsToWord()`   | Convert a Google Docs file to Word         |
+| `convertDocsToText()`   | Convert a Google Docs file to plain text   |
+| `convertCsvToSheet()`   | Convert a CSV file to Google Sheets        |
+| `convertExcelToSheet()` | Convert an Excel file to Google Sheets     |
+| `convertSheetToCsv()`   | Convert a Google Sheet to CSV              |
+| `convertSheetToPdf()`   | Convert a Google Sheet to PDF              |
+| `convertPptToSlides()`  | Convert a PowerPoint file to Google Slides |
+| `convertSlidesToPpt()`  | Convert a Google Slides file to PowerPoint |
+| `convertSlidesToPdf()`  | Convert a Google Slides file to PDF        |
+| `convertPdfToDocs()`    | Convert a PDF file to Google Docs (OCR)    |
+| `convertDrawingToPng()` | Convert a Google Drawing to PNG            |
+| `convertDrawingToPdf()` | Convert a Google Drawing to PDF            |
 
 ---
 
-### ⚞ **Google Apps Script Tools**
+### ⚞ **`operations.watcherOperations`**
 
-| Method                 | Description                                                                                                                        |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `createGoogleScript()` | Naya Google Apps Script project create karta hai, code upload karta hai, version banata hai aur execution ke liye deploy karta hai |
-| `updateGoogleScript()` | Existing Apps Script project ka code overwrite/update karta hai (future auto-version optional)                                     |
-| `deleteGoogleScript()` | Apps Script project ko Google Drive trash me move kar deta hai                                                                     |
-| `deployGoogleScript()` | Apps Script ka naya version execution API ke liye deploy karta hai (web app deploy nahi)                                           |
+| Method                   | Description                                                  |
+| ------------------------ | ------------------------------------------------------------ |
+| `watchFolderEvent()`     | Detect add/modify/delete events in a folder (non-recursive). |
+| `watchFolderDeepEvent()` | Detect events recursively in a folder and subfolders.        |
 
-## 🔑 Google Apps Script API Enable Karna (Required)
+---
+
+### ⚞ **`operations.scriptOperations`**
+
+| Method                 | Description                                     |
+| ---------------------- | ----------------------------------------------- |
+| `createGoogleScript()` | Create a new Google Apps Script project.        |
+| `updateGoogleScript()` | Update code in an existing Apps Script project. |
+| `deleteGoogleScript()` | Move an Apps Script project to trash.           |
+| `deployGoogleScript()` | Deploy a new version of an Apps Script project. |
+
+## 🔑 Enabling Google Apps Script API (Required for Script Tools)
 
 ### 1️⃣ Enable Apps Script API in Google Cloud Console
 
@@ -242,9 +243,8 @@ Open this link (replace YOUR_PROJECT_ID if needed):
 
 Then:
 
-Click Enable
-
-Make sure the Apps Script API is active in your Cloud project
+1. Click **Enable**
+2. Make sure the Apps Script API is active in your Cloud project
 
 ### 2️⃣ Enable Apps Script API in Your Google Account
 
@@ -254,7 +254,7 @@ Open:
 
 👉 https://script.google.com/home/usersettings
 
-Then turn ON:
+Then turn **ON**:
 
 🔘 “Apps Script API”
 

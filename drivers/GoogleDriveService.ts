@@ -78,6 +78,17 @@ export class GoogleDriveService {
   }
 
   /**
+   * Move file to a different folder
+   */
+  public async moveFile(
+    fileId: string,
+    newFolderId: string
+  ): Promise<ApiResponse<FileMetadata>> {
+    const { moveFile } = await import("./functions/files/moveFile");
+    return moveFile(this.oauth2, fileId, newFolderId);
+  }
+
+  /**
    * Read file data directly (returns Buffer or text)
    */
   public async readFileData(

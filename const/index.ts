@@ -1,3 +1,8 @@
+// Google Drive API base URLs
+export const DRIVE_API_BASE = "https://www.googleapis.com/drive/v3";
+export const DRIVE_UPLOAD_BASE = "https://www.googleapis.com/upload/drive/v3";
+export const SCRIPT_API_BASE = "https://script.googleapis.com/v1";
+
 export const MIME_TYPES = {
   // Google Workspace
   FOLDER: "application/vnd.google-apps.folder",

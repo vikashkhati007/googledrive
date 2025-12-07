@@ -45,7 +45,7 @@ await generateCredentialsAndTokens({
   projectid: process.env.GOOGLE_PROJECT_ID!,
   clientsecret: process.env.GOOGLE_CLIENT_SECRET!,
   redirecturis: ["http://localhost:3000/oauth2callback"],
-  javascriptorigins: ["http://localhost:3000"],
+  javascript_origin: ["http://localhost:3000"],
 });
 ```
 

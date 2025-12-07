@@ -36,3 +36,6 @@ credentials.json
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# test files
+test.ts

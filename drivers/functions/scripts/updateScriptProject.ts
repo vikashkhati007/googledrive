@@ -4,7 +4,7 @@ import { SCRIPT_API_BASE } from "../../../const";
 export async function updateScriptProject(
   oauth2: OAuth2Client,
   scriptId: string,
-  code: string
+  files: any[]
 ) {
   try {
     const authHeader = await oauth2.getAuthHeader();
@@ -17,13 +17,7 @@ export async function updateScriptProject(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          files: [
-            {
-              name: "Code",
-              type: "SERVER_JS",
-              source: code,
-            },
-          ],
+          files: files,
         }),
       }
     );

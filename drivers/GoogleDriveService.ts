@@ -463,11 +463,11 @@ export class GoogleDriveService {
     return createScriptProject(this.oauth2, title, code);
   }
 
-  public async updateScriptProject(scriptId: string, code: string) {
+  public async updateScriptProject(scriptId: string, files: any[]) {
     const { updateScriptProject } = await import(
       "./functions/scripts/updateScriptProject"
     );
-    return updateScriptProject(this.oauth2, scriptId, code);
+    return updateScriptProject(this.oauth2, scriptId, files);
   }
 
   public async deleteScriptProject(scriptId: string) {
@@ -480,5 +480,15 @@ export class GoogleDriveService {
   public async DeployScript(scriptId: string) {
     const { DeployScript } = await import("./functions/scripts/DeployScript");
     return DeployScript(this.oauth2, scriptId);
+  }
+
+  public async runScript(
+    scriptId: string,
+    functionName: string,
+    parameters?: any[],
+    devMode?: boolean
+  ) {
+    const { runScript } = await import("./functions/scripts/runScript");
+    return runScript(this.oauth2, scriptId, functionName, parameters, devMode);
   }
 }

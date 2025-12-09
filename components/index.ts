@@ -39,6 +39,7 @@ export { searchModifiedAfter } from "./04-SearchOperation/searchModifiedAfter";
 export { searchStarredFiles } from "./04-SearchOperation/searchStarredFiles";
 export { searchSharedFiles } from "./04-SearchOperation/searchSharedFiles";
 export { searchByContent } from "./04-SearchOperation/searchByContent";
+export { searchFiles } from "./04-SearchOperation/searchFiles";
 
 // 05-ListOperation
 export { listFoldersByName } from "./05-ListOperation/listFoldersByName";
@@ -109,3 +110,4 @@ export { createGoogleScript } from "./10-ScriptOperation/createGoogleScript";
 export { updateGoogleScript } from "./10-ScriptOperation/updateGoogleScript";
 export { deleteGoogleScript } from "./10-ScriptOperation/deleteGoogleScript";
 export { deployGoogleScript } from "./10-ScriptOperation/deployGoogleScript";
+export { runGoogleScript } from "./10-ScriptOperation/runGoogleScript";

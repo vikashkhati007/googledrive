@@ -35,6 +35,7 @@ import {
   searchStarredFiles,
   searchSharedFiles,
   searchByContent,
+  searchFiles,
   // List Operations
   listFoldersByName,
   listAllFolders,
@@ -89,6 +90,7 @@ import {
   updateGoogleScript,
   deleteGoogleScript,
   deployGoogleScript,
+  runGoogleScript,
 } from "./components";
 
 // Grouped exports for easier discovery
@@ -134,6 +136,7 @@ export const searchOperations = {
   searchStarredFiles,
   searchSharedFiles,
   searchByContent,
+  searchFiles,
 };
 
 export const listOperations = {
@@ -200,6 +203,7 @@ export const scriptOperations = {
   updateGoogleScript,
   deleteGoogleScript,
   deployGoogleScript,
+  runGoogleScript,
 };
 
 // Export all operations as a single flat object (backwards compatible)

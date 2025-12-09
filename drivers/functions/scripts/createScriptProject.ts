@@ -32,10 +32,57 @@ export async function createScriptProject(
       exceptionLogging: "STACKDRIVER",
       runtimeVersion: "V8",
       webapp: {
-        access: "ANYONE",
+        access: "ANYONE_ANONYMOUS",
         executeAs: "USER_DEPLOYING",
       },
+      executionApi: {
+        access: "MYSELF",
+      },
     };
+
+    // Check if code contains 'doGet'
+    let finalCode = code;
+    if (!code.includes("function doGet")) {
+      const defaultDispatcher = `
+/**
+ * DEFAULT DISPATCHER (Injected by GDriveKit)
+ * Allows calling any global function via ?func=functionName
+ */
+function doGet(e) {
+  var params = e.parameter;
+  var funcName = params.func;
+
+  if (!funcName) {
+    return ContentService.createTextOutput("Error: Missing 'func' parameter");
+  }
+
+  // Sanitize function name to prevent dangerous execution
+  if (!funcName.match(/^[a-zA-Z0-9_]+$/)) {
+    return ContentService.createTextOutput("Error: Invalid function name");
+  }
+
+  // Dynamic dispatch
+  // In Apps Script V8, global functions are properties of the global object ('this')
+  if (typeof this[funcName] === 'function') {
+    try {
+      var result = this[funcName](params);
+      
+      // Handle object results (auto-stringify)
+      if (typeof result === 'object' && result !== null) {
+        return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+      }
+      return ContentService.createTextOutput(String(result));
+    } catch (error) {
+       return ContentService.createTextOutput("Error executing '" + funcName + "': " + error.toString());
+    }
+  } else {
+    return ContentService.createTextOutput("Error: Function '" + funcName + "' not found");
+  }
+}
+      
+`;
+      finalCode = defaultDispatcher + "\n" + code;
+    }
 
     const content = [
       {
@@ -46,7 +93,7 @@ export async function createScriptProject(
       {
         name: "Code",
         type: "SERVER_JS",
-        source: code,
+        source: finalCode,
       },
     ];
 

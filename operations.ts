@@ -90,7 +90,7 @@ import {
   updateGoogleScript,
   deleteGoogleScript,
   deployGoogleScript,
-  runGoogleScript,
+  runGoogleScriptFunction,
 } from "./components";
 
 // Grouped exports for easier discovery
@@ -203,7 +203,7 @@ export const scriptOperations = {
   updateGoogleScript,
   deleteGoogleScript,
   deployGoogleScript,
-  runGoogleScript,
+  runGoogleScriptFunction,
 };
 
 // Export all operations as a single flat object (backwards compatible)

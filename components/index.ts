@@ -110,4 +110,4 @@ export { createGoogleScript } from "./10-ScriptOperation/createGoogleScript";
 export { updateGoogleScript } from "./10-ScriptOperation/updateGoogleScript";
 export { deleteGoogleScript } from "./10-ScriptOperation/deleteGoogleScript";
 export { deployGoogleScript } from "./10-ScriptOperation/deployGoogleScript";
-export { runGoogleScript } from "./10-ScriptOperation/runGoogleScript";
+export { runGoogleScriptFunction } from "./10-ScriptOperation/runGoogleScriptFunction";

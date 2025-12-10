@@ -12,6 +12,7 @@ import {
 } from "../types/index";
 import { OAuth2Client } from "./oauth2-client";
 import { Readable } from "stream";
+import { ScriptProjectType } from "./functions/scripts/createScriptProject";
 
 export interface DriveServiceOptions {
   /** Path to tokens file (default: ./tokens.json) */
@@ -456,11 +457,15 @@ export class GoogleDriveService {
   }
 
   // Google Apps Script Management
-  public async createScriptProject(title: string, code: string) {
+  public async createScriptProject(
+    title: string,
+    code: string,
+    projectType: ScriptProjectType = "FUNCTION"
+  ) {
     const { createScriptProject } = await import(
       "./functions/scripts/createScriptProject"
     );
-    return createScriptProject(this.oauth2, title, code);
+    return createScriptProject(this.oauth2, title, code, projectType);
   }
 
   public async updateScriptProject(scriptId: string, files: any[]) {
@@ -481,14 +486,21 @@ export class GoogleDriveService {
     const { DeployScript } = await import("./functions/scripts/DeployScript");
     return DeployScript(this.oauth2, scriptId);
   }
-
-  public async runScript(
-    scriptId: string,
-    functionName: string,
-    parameters?: any[],
-    devMode?: boolean
+  public async runScriptProject(
+    url: string,
+    functionName?: string,
+    parameters: Record<string, any> = {},
+    projectType: ScriptProjectType = "FUNCTION"
   ) {
-    const { runScript } = await import("./functions/scripts/runScript");
-    return runScript(this.oauth2, scriptId, functionName, parameters, devMode);
+    const { runScriptProject } = await import(
+      "./functions/scripts/runScriptProject"
+    );
+    return runScriptProject(
+      this.oauth2,
+      url,
+      functionName,
+      parameters,
+      projectType
+    );
   }
 }

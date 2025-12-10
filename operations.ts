@@ -87,9 +87,9 @@ import {
   watchFolderDeepEvent,
   // Script Operations
   createGoogleScript,
-  updateGoogleScript,
   deleteGoogleScript,
   deployGoogleScript,
+  runGoogleScript,
   runGoogleScriptFunction,
 } from "./components";
 
@@ -200,9 +200,9 @@ export const watcherOperations = {
 
 export const scriptOperations = {
   createGoogleScript,
-  updateGoogleScript,
   deleteGoogleScript,
   deployGoogleScript,
+  runGoogleScript,
   runGoogleScriptFunction,
 };
 

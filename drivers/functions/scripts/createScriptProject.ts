@@ -1,10 +1,13 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { SCRIPT_API_BASE } from "../../../const";
 
+export type ScriptProjectType = "HTML" | "API" | "FUNCTION";
+
 export async function createScriptProject(
   oauth2: OAuth2Client,
   title: string,
-  code: string
+  code: string,
+  projectType: ScriptProjectType = "FUNCTION"
 ) {
   try {
     const authHeader = await oauth2.getAuthHeader();
@@ -40,34 +43,32 @@ export async function createScriptProject(
       },
     };
 
-    // Check if code contains 'doGet'
-    let finalCode = code;
-    if (!code.includes("function doGet")) {
-      const defaultDispatcher = `
+    let serverCode = "";
+    let htmlContent = "";
+
+    // Inject boilerplate based on project type
+    if (projectType === "FUNCTION") {
+      // 1. FUNCTION: code is JS
+      if (!code.includes("function doGet")) {
+        const defaultDispatcher = `
 /**
- * DEFAULT DISPATCHER (Injected by GDriveKit)
- * Allows calling any global function via ?func=functionName
+ * [FUNCTION MODE] DISPATCHER
+ * Allows calling global functions via ?func=functionName
  */
 function doGet(e) {
   var params = e.parameter;
   var funcName = params.func;
 
-  if (!funcName) {
-    return ContentService.createTextOutput("Error: Missing 'func' parameter");
-  }
+  if (!funcName) return ContentService.createTextOutput("Error: Missing 'func' parameter");
 
-  // Sanitize function name to prevent dangerous execution
+  // Sanitize function name
   if (!funcName.match(/^[a-zA-Z0-9_]+$/)) {
     return ContentService.createTextOutput("Error: Invalid function name");
   }
 
-  // Dynamic dispatch
-  // In Apps Script V8, global functions are properties of the global object ('this')
   if (typeof this[funcName] === 'function') {
     try {
       var result = this[funcName](params);
-      
-      // Handle object results (auto-stringify)
       if (typeof result === 'object' && result !== null) {
         return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
       }
@@ -79,9 +80,89 @@ function doGet(e) {
     return ContentService.createTextOutput("Error: Function '" + funcName + "' not found");
   }
 }
-      
 `;
-      finalCode = defaultDispatcher + "\n" + code;
+        serverCode = defaultDispatcher + "\n" + code;
+      } else {
+        serverCode = code;
+      }
+    } else if (projectType === "HTML") {
+      // 2. HTML: code is HTML
+      // Standard dispatcher for HTML
+      serverCode = `
+/**
+ * [HTML MODE]
+ * Renders the 'index' HTML file.
+ */
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+      .setTitle('${title}')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+`;
+      htmlContent = code; // Use the provided code as strict HTML content
+    } else if (projectType === "API") {
+      // 3. API: Wraps user's apiMain function
+      if (!code.includes("function doGet")) {
+        // If the user didn't write their own doGet/doPost, we wrap their 'apiMain'
+        const apiTemplate = `
+/**
+ * [API MODE]
+ * Automatically wraps apiMain(params)
+ */
+function doGet(e) {
+  return handleApiRequest(e.parameter);
+}
+
+function doPost(e) {
+  var params = {};
+  if (e.postData && e.postData.contents) {
+    try {
+      params = JSON.parse(e.postData.contents);
+    } catch(err) {
+      params = { error: "Invalid JSON body", raw: e.postData.contents };
+    }
+  }
+  // Merge query params if needed, or just use body. 
+  // For simplicity, let's mix them or just pass what we have.
+  for (var k in e.parameter) {
+    params[k] = e.parameter[k];
+  }
+  return handleApiRequest(params);
+}
+
+function handleApiRequest(params) {
+  if (typeof apiMain !== 'function') {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error', 
+      message: 'apiMain function not defined in script'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  try {
+    var result = apiMain(params);
+    // If result is already a proper output, return it. 
+    // Otherwise assume it's data to be JSON stringified.
+    if (result && typeof result.getMimeType === 'function') {
+      return result;
+    }
+    
+    var response = { status: 'success', data: result };
+    return ContentService.createTextOutput(JSON.stringify(response))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+     return ContentService.createTextOutput(JSON.stringify({
+       status: 'error', 
+       message: err.toString(),
+       stack: err.stack
+     })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+`;
+        serverCode = apiTemplate + "\n" + code;
+      } else {
+        serverCode = code;
+      }
     }
 
     const content = [
@@ -93,9 +174,17 @@ function doGet(e) {
       {
         name: "Code",
         type: "SERVER_JS",
-        source: finalCode,
+        source: serverCode,
       },
     ];
+
+    if (projectType === "HTML") {
+      content.push({
+        name: "index",
+        type: "HTML",
+        source: htmlContent,
+      });
+    }
 
     const updateResponse = await fetch(
       `${SCRIPT_API_BASE}/projects/${scriptId}/content`,

@@ -1,5 +1,6 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { SCRIPT_API_BASE } from "../../../const";
+import { client } from "../../jirenClient";
 
 export type ScriptProjectType = "HTML" | "API" | "FUNCTION";
 
@@ -13,20 +14,22 @@ export async function createScriptProject(
     const authHeader = await oauth2.getAuthHeader();
 
     // Create blank project
-    const createResponse = await fetch(`${SCRIPT_API_BASE}/projects`, {
-      method: "POST",
-      headers: {
-        ...authHeader,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title }),
-    });
+    const createResponse = client.post(
+      `${SCRIPT_API_BASE}/projects`,
+      JSON.stringify({ title }),
+      {
+        headers: {
+          ...authHeader,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!createResponse.ok) {
       throw new Error(await createResponse.text());
     }
 
-    const project = await createResponse.json();
+    const project = createResponse.json();
     const scriptId = project.scriptId!;
 
     // Correct manifest
@@ -186,15 +189,15 @@ function handleApiRequest(params) {
       });
     }
 
-    const updateResponse = await fetch(
+    // Note: Using PATCH instead of PUT (Jiren doesn't have PUT)
+    const updateResponse = client.patch(
       `${SCRIPT_API_BASE}/projects/${scriptId}/content`,
+      JSON.stringify({ files: content }),
       {
-        method: "PUT",
         headers: {
           ...authHeader,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ files: content }),
       }
     );
 

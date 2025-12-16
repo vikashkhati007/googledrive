@@ -1,5 +1,6 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { DRIVE_API_BASE } from "../../../const";
+import { client } from "../../jirenClient";
 
 export async function findDuplicate(oauth2: OAuth2Client): Promise<void> {
   try {
@@ -20,7 +21,7 @@ export async function findDuplicate(oauth2: OAuth2Client): Promise<void> {
         queryParams.set("pageToken", pageToken);
       }
 
-      const response = await fetch(
+      const response = client.get(
         `${DRIVE_API_BASE}/files?${queryParams.toString()}`,
         { headers: authHeader }
       );
@@ -29,7 +30,7 @@ export async function findDuplicate(oauth2: OAuth2Client): Promise<void> {
         throw new Error(await response.text());
       }
 
-      const res = await response.json();
+      const res = response.json();
       files.push(...(res.files || []));
       pageToken = res.nextPageToken || undefined;
     } while (pageToken);

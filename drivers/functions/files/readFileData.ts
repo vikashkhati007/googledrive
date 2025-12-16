@@ -10,6 +10,8 @@ export async function readFileData(
 ): Promise<ApiResponse<string | Buffer>> {
   try {
     const authHeader = await oauth2.getAuthHeader();
+    // Note: Using native fetch here for binary data support
+    // Jiren is optimized for JSON/text responses, not binary streaming
     const response = await fetch(
       `${DRIVE_API_BASE}/files/${fileId}?alt=media`,
       {

@@ -1,6 +1,7 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { FileMetadata } from "../../../types";
 import { DRIVE_API_BASE } from "../../../const";
+import { client } from "../../jirenClient";
 
 export async function watchFolder(
   oauth2: OAuth2Client,
@@ -17,7 +18,7 @@ export async function watchFolder(
 
   const fetchFiles = async () => {
     const authHeader = await oauth2.getAuthHeader();
-    const response = await fetch(
+    const response = client.get(
       `${DRIVE_API_BASE}/files?q='${folderId}' in parents and trashed = false&fields=files(id,name,mimeType,modifiedTime,size)&pageSize=1000`,
       { headers: authHeader }
     );
@@ -26,7 +27,7 @@ export async function watchFolder(
       throw new Error(await response.text());
     }
 
-    const res = await response.json();
+    const res = response.json();
     const map: Record<string, FileMetadata> = {};
 
     for (const f of res.files || []) {

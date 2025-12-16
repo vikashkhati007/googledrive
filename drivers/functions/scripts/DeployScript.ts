@@ -1,22 +1,20 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { SCRIPT_API_BASE } from "../../../const";
+import { client } from "../../jirenClient";
 
 export async function DeployScript(oauth2: OAuth2Client, scriptId: string) {
   try {
     const authHeader = await oauth2.getAuthHeader();
 
     // Create version
-    const versionResponse = await fetch(
+    const versionResponse = client.post(
       `${SCRIPT_API_BASE}/projects/${scriptId}/versions`,
+      JSON.stringify({ description: "Auto version" }),
       {
-        method: "POST",
         headers: {
           ...authHeader,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          description: "Auto version",
-        }),
       }
     );
 
@@ -24,22 +22,18 @@ export async function DeployScript(oauth2: OAuth2Client, scriptId: string) {
       throw new Error(await versionResponse.text());
     }
 
-    const version = await versionResponse.json();
+    const version = versionResponse.json();
     const versionNumber = version.versionNumber;
 
     // Deploy using MANIFEST
-    const deployResponse = await fetch(
+    const deployResponse = client.post(
       `${SCRIPT_API_BASE}/projects/${scriptId}/deployments`,
+      JSON.stringify({ versionNumber, manifestFileName: "appsscript" }),
       {
-        method: "POST",
         headers: {
           ...authHeader,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          versionNumber,
-          manifestFileName: "appsscript",
-        }),
       }
     );
 
@@ -47,7 +41,7 @@ export async function DeployScript(oauth2: OAuth2Client, scriptId: string) {
       throw new Error(await deployResponse.text());
     }
 
-    const deployment = await deployResponse.json();
+    const deployment = deployResponse.json();
 
     const webApp = deployment.entryPoints?.find(
       (e: any) => e.entryPointType === "WEB_APP"

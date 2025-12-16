@@ -1,5 +1,6 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { DRIVE_API_BASE } from "../../../const";
+import { client } from "../../jirenClient";
 
 export async function deleteScriptProject(
   oauth2: OAuth2Client,
@@ -7,14 +8,16 @@ export async function deleteScriptProject(
 ) {
   try {
     const authHeader = await oauth2.getAuthHeader();
-    const response = await fetch(`${DRIVE_API_BASE}/files/${scriptId}`, {
-      method: "PATCH",
-      headers: {
-        ...authHeader,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ trashed: true }),
-    });
+    const response = client.patch(
+      `${DRIVE_API_BASE}/files/${scriptId}`,
+      JSON.stringify({ trashed: true }),
+      {
+        headers: {
+          ...authHeader,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(await response.text());

@@ -1,6 +1,7 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { ApiResponse, ImageMediaMetadata } from "../../../types";
 import { DRIVE_API_BASE } from "../../../const";
+import { client } from "../../jirenClient";
 
 export async function getImageMetadata(
   oauth2: OAuth2Client,
@@ -8,7 +9,7 @@ export async function getImageMetadata(
 ): Promise<ApiResponse<ImageMediaMetadata>> {
   try {
     const authHeader = await oauth2.getAuthHeader();
-    const response = await fetch(
+    const response = client.get(
       `${DRIVE_API_BASE}/files/${fileId}?fields=imageMediaMetadata`,
       { headers: authHeader }
     );
@@ -18,7 +19,7 @@ export async function getImageMetadata(
       throw new Error(error);
     }
 
-    const data = await response.json();
+    const data = response.json();
     return {
       success: true,
       data: data.imageMediaMetadata as ImageMediaMetadata,

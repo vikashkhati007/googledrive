@@ -1,6 +1,7 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { ApiResponse, FileMetadata } from "../../../types";
 import { DRIVE_API_BASE } from "../../../const";
+import { client } from "../../jirenClient";
 
 export async function getCompleteFileMetadata(
   oauth2: OAuth2Client,
@@ -8,7 +9,7 @@ export async function getCompleteFileMetadata(
 ): Promise<ApiResponse<FileMetadata>> {
   try {
     const authHeader = await oauth2.getAuthHeader();
-    const response = await fetch(`${DRIVE_API_BASE}/files/${fileId}?fields=*`, {
+    const response = client.get(`${DRIVE_API_BASE}/files/${fileId}?fields=*`, {
       headers: authHeader,
     });
 
@@ -17,7 +18,7 @@ export async function getCompleteFileMetadata(
       throw new Error(error);
     }
 
-    const data = await response.json();
+    const data = response.json();
     return { success: true, data: data as FileMetadata };
   } catch (error) {
     return {

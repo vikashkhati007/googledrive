@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import { OAuth2Client } from "../../oauth2-client";
 import { ApiResponse } from "../../../types/index";
-import { fetchWithAuth } from "../utils";
 import { DRIVE_API_BASE } from "../../../const/index";
 
 /**
@@ -13,9 +12,12 @@ export async function downloadFile(
   destPath: string
 ): Promise<ApiResponse<{ path: string }>> {
   try {
-    const response = await fetchWithAuth(
-      client,
-      `${DRIVE_API_BASE}/files/${fileId}?alt=media`
+    const authHeader = await client.getAuthHeader();
+    // Note: Using native fetch for binary download support
+    // Jiren doesn't support arrayBuffer() method
+    const response = await fetch(
+      `${DRIVE_API_BASE}/files/${fileId}?alt=media`,
+      { headers: authHeader }
     );
 
     if (!response.ok) {

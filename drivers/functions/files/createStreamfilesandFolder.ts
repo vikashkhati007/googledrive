@@ -2,6 +2,7 @@ import { OAuth2Client } from "../../oauth2-client";
 import { DRIVE_API_BASE } from "../../../const";
 import { Readable } from "stream";
 import { ReadableStream } from "stream/web";
+import { client } from "../../jirenClient";
 
 export async function createStreamfilesandFolder(
   oauth2: OAuth2Client,
@@ -9,7 +10,7 @@ export async function createStreamfilesandFolder(
 ): Promise<NodeJS.ReadableStream | null> {
   try {
     const authHeader = await oauth2.getAuthHeader();
-    const metaResponse = await fetch(
+    const metaResponse = client.get(
       `${DRIVE_API_BASE}/files/${fileId}?fields=id,name,mimeType`,
       { headers: authHeader }
     );
@@ -18,7 +19,7 @@ export async function createStreamfilesandFolder(
       throw new Error(await metaResponse.text());
     }
 
-    const meta = await metaResponse.json();
+    const meta = metaResponse.json();
     const mimeType = meta.mimeType;
 
     const exportMap: Record<string, string> = {
@@ -32,6 +33,8 @@ export async function createStreamfilesandFolder(
     };
 
     let response: Response;
+
+    // Note: Using native fetch for streaming responses
 
     if (exportMap[mimeType!]) {
       console.log(`📤 Exporting ${meta.name} (${mimeType})`);

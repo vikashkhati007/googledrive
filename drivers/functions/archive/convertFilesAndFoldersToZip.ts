@@ -6,6 +6,7 @@ import archiverZipEncrypted from "archiver-zip-encrypted";
 import { PassThrough, Readable } from "stream";
 import { ReadableStream } from "stream/web";
 import { Buffer } from "buffer";
+import { client } from "../../jirenClient";
 
 (archiver as any).registerFormat("zip-encrypted", archiverZipEncrypted);
 
@@ -48,7 +49,7 @@ export async function convertFilesAndFoldersToZip(
     let parentFolderId = uploadToFolderId;
     if (!parentFolderId) {
       const referenceId = folderId || fileIds[0];
-      const response = await fetch(
+      const response = client.get(
         `${DRIVE_API_BASE}/files/${referenceId}?fields=parents`,
         { headers: authHeader }
       );
@@ -57,7 +58,7 @@ export async function convertFilesAndFoldersToZip(
         throw new Error(await response.text());
       }
 
-      const info = await response.json();
+      const info = response.json();
       const parents = info.parents;
       if (!parents || parents.length === 0) {
         throw new Error("⚠️ Could not determine parent folder.");
@@ -117,14 +118,14 @@ export async function convertFilesAndFoldersToZip(
     } else {
       console.log("📄 Zipping multiple files...");
       for (const fileId of fileIds) {
-        const metaResponse = await fetch(
+        const metaResponse = client.get(
           `${DRIVE_API_BASE}/files/${fileId}?fields=id,name`,
           { headers: authHeader }
         );
 
         if (!metaResponse.ok) continue;
 
-        const meta = await metaResponse.json();
+        const meta = metaResponse.json();
         const name = meta.name || `file_${fileId}`;
         const stream = await createStreamfilesandFolder(oauth2, fileId);
         if (!stream) continue;

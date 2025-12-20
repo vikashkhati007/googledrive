@@ -8,7 +8,7 @@
         "archiver-zip-encrypted": "^2.0.0",
         "core-util-is": "^1.0.3",
         "crypto": "^1.0.1",
-        "jiren": "^1.0.8",
+        "jiren": "^1.0.10",
         "update-notifier": "^7.3.1",
       },
       "devDependencies": {
@@ -154,7 +154,9 @@
 
     "jackspeak": ["jackspeak@3.4.3", "", { "dependencies": { "@isaacs/cliui": "^8.0.2" }, "optionalDependencies": { "@pkgjs/parseargs": "^0.11.0" } }, "sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw=="],
 
-    "jiren": ["jiren@1.0.8", "", { "peerDependencies": { "typescript": "^5" } }, "sha512-OYgwLpqrmjI2DEWH0y1Be2uQm15wH3GfkPAbRwuNuJohP9cQGNnK9CVdF7AceVy4X3YE63WnvgbyI9acrQaqWg=="],
+    "jiren": ["jiren@1.0.10", "", { "optionalDependencies": { "koffi": "^2.9.0" }, "peerDependencies": { "typescript": "^5" } }, "sha512-mXNw8+yQ4za0C/V3EM4YH7nr+sVb8Rmmy7aMipgcKfsd6jxTLqiE8Bz+ttcsm4jkaXMNoBmIDw1i5QzIYQ71EA=="],
+
+    "koffi": ["koffi@2.14.1", "", {}, "sha512-IMFL3IbRDXacSIjs7pPbPxgNlJ2hUtawQXU2QPdr6iw38jmv5AesAUG8HPX00xl0PPA2BbEa3noTw1YdHY+gHg=="],
 
     "ky": ["ky@1.14.0", "", {}, "sha512-Rczb6FMM6JT0lvrOlP5WUOCB7s9XKxzwgErzhKlKde1bEV90FXplV1o87fpt4PU/asJFiqjYJxAJyzJhcrxOsQ=="],
 

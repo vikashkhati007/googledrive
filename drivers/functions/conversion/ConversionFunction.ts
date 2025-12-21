@@ -2,7 +2,7 @@ import { OAuth2Client } from "../../oauth2-client";
 import { ApiResponse, FileMetadata } from "../../../types";
 import { DRIVE_API_BASE, DRIVE_UPLOAD_BASE, MIME_TYPES } from "../../../const";
 import { Buffer } from "buffer";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export async function ConversionFunction(
   oauth2: OAuth2Client,
@@ -13,7 +13,7 @@ export async function ConversionFunction(
     const authHeader = await oauth2.getAuthHeader();
 
     // Step 1: Get file metadata
-    const metaResponse = client.get(
+    const metaResponse = await client.get(
       `${DRIVE_API_BASE}/files/${fileId}?fields=id,name,mimeType`,
       { headers: authHeader }
     );
@@ -22,7 +22,7 @@ export async function ConversionFunction(
       throw new Error(await metaResponse.text());
     }
 
-    const originalFile = metaResponse.json();
+    const originalFile = await metaResponse.json();
     const sourceMime = originalFile.mimeType || "application/octet-stream";
     const baseName = originalFile.name?.split(".")[0] || "Converted_File";
 

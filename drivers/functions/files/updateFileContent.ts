@@ -1,6 +1,6 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { DRIVE_UPLOAD_BASE } from "../../../const";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export async function updateFileContent(
   oauth2: OAuth2Client,
@@ -10,7 +10,7 @@ export async function updateFileContent(
 ) {
   try {
     const authHeader = await oauth2.getAuthHeader();
-    const response = client.patch(
+    const response = await client.patch(
       `${DRIVE_UPLOAD_BASE}/files/${fileId}?uploadType=media`,
       content,
       {
@@ -26,7 +26,7 @@ export async function updateFileContent(
       throw new Error(error);
     }
 
-    return response.json();
+    return await response.json();
   } catch (error: any) {
     console.error("❌ Error updating file content:", error.message);
     throw error;

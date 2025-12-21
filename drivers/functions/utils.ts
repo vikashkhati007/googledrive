@@ -1,9 +1,8 @@
 import { OAuth2Client } from "../oauth2-client";
-import { client } from "../jirenClient";
-import type { HttpResponse } from "jiren";
+import { client, type HttpResponse } from "../Client";
 
 /**
- * Helper method to make authenticated requests using Jiren
+ * Helper method to make authenticated requests using native fetch
  */
 export async function fetchWithAuth(
   oauthClient: OAuth2Client,
@@ -23,16 +22,20 @@ export async function fetchWithAuth(
 
   const method = (options.method || "GET").toUpperCase();
 
-  // Handle different HTTP methods with Jiren
+  // Handle different HTTP methods with native fetch wrapper
   let response: HttpResponse;
   if (method === "GET") {
-    response = client.get(url, { headers });
+    response = await client.get(url, { headers });
   } else if (method === "POST") {
-    response = client.post(url, (options.body as string) || "", { headers });
+    response = await client.post(url, (options.body as string) || "", {
+      headers,
+    });
   } else if (method === "PATCH") {
-    response = client.patch(url, (options.body as string) || "", { headers });
+    response = await client.patch(url, (options.body as string) || "", {
+      headers,
+    });
   } else if (method === "DELETE") {
-    response = client.delete(url, { headers });
+    response = await client.delete(url, { headers });
   } else {
     throw new Error(`Unsupported HTTP method: ${method}`);
   }

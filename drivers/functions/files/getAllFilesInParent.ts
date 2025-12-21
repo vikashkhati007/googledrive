@@ -1,6 +1,6 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { DRIVE_API_BASE, MIME_TYPES } from "../../../const";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export async function getAllFilesInParent(
   oauth2: OAuth2Client,
@@ -21,14 +21,14 @@ export async function getAllFilesInParent(
       queryParams.set("pageToken", pageToken);
     }
 
-    const response = client.get(
+    const response = await client.get(
       `${DRIVE_API_BASE}/files?${queryParams.toString()}`,
       { headers: authHeader }
     );
 
     if (!response.ok) break;
 
-    const res = response.json();
+    const res = await response.json();
 
     for (const file of res.files || []) {
       results.push({

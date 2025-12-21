@@ -1,7 +1,7 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { ApiResponse, FileMetadata } from "../../../types";
 import { DRIVE_API_BASE } from "../../../const";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export async function updateFileMetadata(
   oauth2: OAuth2Client,
@@ -10,7 +10,7 @@ export async function updateFileMetadata(
 ): Promise<ApiResponse<FileMetadata>> {
   try {
     const authHeader = await oauth2.getAuthHeader();
-    const response = client.patch(
+    const response = await client.patch(
       `${DRIVE_API_BASE}/files/${fileId}?fields=id,name,mimeType,modifiedTime`,
       JSON.stringify(metadata),
       {
@@ -26,7 +26,7 @@ export async function updateFileMetadata(
       throw new Error(error);
     }
 
-    const data = response.json();
+    const data = await response.json();
     return { success: true, data: data as FileMetadata };
   } catch (error) {
     return {

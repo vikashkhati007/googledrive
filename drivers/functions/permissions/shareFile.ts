@@ -1,7 +1,7 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { ApiResponse } from "../../../types";
 import { DRIVE_API_BASE } from "../../../const";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export async function shareFile(
   oauth2: OAuth2Client,
@@ -11,7 +11,7 @@ export async function shareFile(
 ): Promise<ApiResponse<void>> {
   try {
     const authHeader = await oauth2.getAuthHeader();
-    const response = client.post(
+    const response = await client.post(
       `${DRIVE_API_BASE}/files/${fileId}/permissions`,
       JSON.stringify({
         type: "user",

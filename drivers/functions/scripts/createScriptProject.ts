@@ -1,6 +1,6 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { SCRIPT_API_BASE } from "../../../const";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export type ScriptProjectType = "HTML" | "API" | "FUNCTION";
 
@@ -14,7 +14,7 @@ export async function createScriptProject(
     const authHeader = await oauth2.getAuthHeader();
 
     // Create blank project
-    const createResponse = client.post(
+    const createResponse = await client.post(
       `${SCRIPT_API_BASE}/projects`,
       JSON.stringify({ title }),
       {
@@ -29,7 +29,7 @@ export async function createScriptProject(
       throw new Error(await createResponse.text());
     }
 
-    const project = createResponse.json();
+    const project = await createResponse.json();
     const scriptId = project.scriptId!;
 
     // Correct manifest
@@ -190,7 +190,7 @@ function handleApiRequest(params) {
     }
 
     // Note: Using PATCH instead of PUT (Jiren doesn't have PUT)
-    const updateResponse = client.patch(
+    const updateResponse = await client.patch(
       `${SCRIPT_API_BASE}/projects/${scriptId}/content`,
       JSON.stringify({ files: content }),
       {

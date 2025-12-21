@@ -1,6 +1,6 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { ScriptProjectType } from "./createScriptProject";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 /**
  * Call a Google Apps Script Web App URL with parameters
@@ -32,7 +32,7 @@ export async function runScriptProject(
       }
     });
 
-    const response = client.get(urlObj.toString(), { maxRedirects: 5 });
+    const response = await client.get(urlObj.toString());
 
     if (!response.ok) {
       throw new Error(`Web App call failed: ${response.status}`);

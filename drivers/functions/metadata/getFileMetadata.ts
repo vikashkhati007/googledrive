@@ -1,7 +1,7 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { ApiResponse, FileMetadata } from "../../../types";
 import { DRIVE_API_BASE } from "../../../const";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export async function getFileMetadata(
   oauth2: OAuth2Client,
@@ -11,7 +11,7 @@ export async function getFileMetadata(
     const fields =
       "id,name,mimeType,size,createdTime,modifiedTime,parents,webViewLink";
     const authHeader = await oauth2.getAuthHeader();
-    const response = client.get(
+    const response = await client.get(
       `${DRIVE_API_BASE}/files/${fileId}?fields=${encodeURIComponent(fields)}`,
       { headers: authHeader }
     );
@@ -21,7 +21,7 @@ export async function getFileMetadata(
       throw new Error(error);
     }
 
-    const data = response.json();
+    const data = await response.json();
     return { success: true, data: data as FileMetadata };
   } catch (error) {
     return {

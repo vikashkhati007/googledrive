@@ -1,7 +1,7 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { ApiResponse, VideoMediaMetadata } from "../../../types";
 import { DRIVE_API_BASE } from "../../../const";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export async function getVideoMetadata(
   oauth2: OAuth2Client,
@@ -9,7 +9,7 @@ export async function getVideoMetadata(
 ): Promise<ApiResponse<VideoMediaMetadata>> {
   try {
     const authHeader = await oauth2.getAuthHeader();
-    const response = client.get(
+    const response = await client.get(
       `${DRIVE_API_BASE}/files/${fileId}?fields=videoMediaMetadata`,
       { headers: authHeader }
     );
@@ -19,7 +19,7 @@ export async function getVideoMetadata(
       throw new Error(error);
     }
 
-    const data = response.json();
+    const data = await response.json();
     return {
       success: true,
       data: data.videoMediaMetadata as VideoMediaMetadata,

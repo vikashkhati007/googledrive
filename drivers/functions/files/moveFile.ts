@@ -1,7 +1,7 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { ApiResponse, FileMetadata } from "../../../types";
 import { DRIVE_API_BASE } from "../../../const";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export async function moveFile(
   oauth2: OAuth2Client,
@@ -12,7 +12,7 @@ export async function moveFile(
     const authHeader = await oauth2.getAuthHeader();
 
     // Step 1: Get current parents
-    const getResponse = client.get(
+    const getResponse = await client.get(
       `${DRIVE_API_BASE}/files/${fileId}?fields=parents`,
       { headers: authHeader }
     );
@@ -22,7 +22,7 @@ export async function moveFile(
       throw new Error(error);
     }
 
-    const fileData = getResponse.json();
+    const fileData = await getResponse.json();
     const previousParents = fileData.parents ? fileData.parents.join(",") : "";
 
     // Step 2: Move the file by adding new parent and removing old ones
@@ -32,7 +32,7 @@ export async function moveFile(
       fields: "id, parents, name",
     });
 
-    const updateResponse = client.patch(
+    const updateResponse = await client.patch(
       `${DRIVE_API_BASE}/files/${fileId}?${queryParams.toString()}`,
       "",
       {
@@ -48,7 +48,7 @@ export async function moveFile(
       throw new Error(error);
     }
 
-    const data = updateResponse.json();
+    const data = await updateResponse.json();
     return { success: true, data: data as FileMetadata };
   } catch (error) {
     return {

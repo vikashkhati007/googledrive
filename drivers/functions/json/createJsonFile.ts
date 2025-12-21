@@ -1,7 +1,7 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { FileMetadata } from "../../../types";
 import { DRIVE_UPLOAD_BASE } from "../../../const";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export async function createJsonFile(
   oauth2: OAuth2Client,
@@ -28,7 +28,7 @@ export async function createJsonFile(
 
     const authHeader = await oauth2.getAuthHeader();
 
-    const response = client.post(
+    const response = await client.post(
       `${DRIVE_UPLOAD_BASE}/files?uploadType=multipart&fields=id,name,webViewLink,webContentLink`,
       body,
       {
@@ -44,7 +44,7 @@ export async function createJsonFile(
       throw new Error(error);
     }
 
-    const data = response.json();
+    const data = await response.json();
     return { success: true, data: data as FileMetadata };
   } catch (error) {
     return {

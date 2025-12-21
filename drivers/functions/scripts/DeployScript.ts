@@ -1,13 +1,13 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { SCRIPT_API_BASE } from "../../../const";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export async function DeployScript(oauth2: OAuth2Client, scriptId: string) {
   try {
     const authHeader = await oauth2.getAuthHeader();
 
     // Create version
-    const versionResponse = client.post(
+    const versionResponse = await client.post(
       `${SCRIPT_API_BASE}/projects/${scriptId}/versions`,
       JSON.stringify({ description: "Auto version" }),
       {
@@ -22,11 +22,11 @@ export async function DeployScript(oauth2: OAuth2Client, scriptId: string) {
       throw new Error(await versionResponse.text());
     }
 
-    const version = versionResponse.json();
+    const version = await versionResponse.json();
     const versionNumber = version.versionNumber;
 
     // Deploy using MANIFEST
-    const deployResponse = client.post(
+    const deployResponse = await client.post(
       `${SCRIPT_API_BASE}/projects/${scriptId}/deployments`,
       JSON.stringify({ versionNumber, manifestFileName: "appsscript" }),
       {
@@ -41,7 +41,7 @@ export async function DeployScript(oauth2: OAuth2Client, scriptId: string) {
       throw new Error(await deployResponse.text());
     }
 
-    const deployment = deployResponse.json();
+    const deployment = await deployResponse.json();
 
     const webApp = deployment.entryPoints?.find(
       (e: any) => e.entryPointType === "WEB_APP"

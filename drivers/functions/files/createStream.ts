@@ -2,7 +2,7 @@ import { OAuth2Client } from "../../oauth2-client";
 import { DRIVE_API_BASE } from "../../../const";
 import { Readable } from "stream";
 import { ReadableStream } from "stream/web";
-import { client } from "../../jirenClient";
+import { client } from "../../Client";
 
 export async function createStream(
   oauth2: OAuth2Client,
@@ -11,7 +11,7 @@ export async function createStream(
 ): Promise<NodeJS.ReadableStream | null> {
   try {
     const authHeader = await oauth2.getAuthHeader();
-    const metaResponse = client.get(
+    const metaResponse = await client.get(
       `${DRIVE_API_BASE}/files/${fileId}?fields=id,name,mimeType`,
       { headers: authHeader }
     );
@@ -20,7 +20,7 @@ export async function createStream(
       throw new Error(await metaResponse.text());
     }
 
-    const file = metaResponse.json();
+    const file = await metaResponse.json();
     const sourceMime = file.mimeType || "application/octet-stream";
 
     let response: Response;

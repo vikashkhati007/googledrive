@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import type { TokenData, GoogleCredentials } from "../types/index";
-import { client } from "./jirenClient";
+import { client } from "./Client";
 
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 
@@ -461,18 +461,18 @@ export class OAuth2Client {
       grant_type: "refresh_token",
     }).toString();
 
-    const response = client.post(TOKEN_ENDPOINT, body, {
+    const response = await client.post(TOKEN_ENDPOINT, body, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
 
     if (!response.ok) {
-      const error = response.text();
+      const error = await response.text();
       throw new Error(`Failed to refresh token: ${error}`);
     }
 
-    const data = response.json();
+    const data = await response.json();
 
     this.accessToken = data.access_token;
     if (data.refresh_token) {
@@ -533,18 +533,18 @@ export class OAuth2Client {
       grant_type: "authorization_code",
     }).toString();
 
-    const response = client.post(TOKEN_ENDPOINT, body, {
+    const response = await client.post(TOKEN_ENDPOINT, body, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
 
     if (!response.ok) {
-      const error = response.text();
+      const error = await response.text();
       throw new Error(`Failed to exchange code for tokens: ${error}`);
     }
 
-    const data = response.json();
+    const data = await response.json();
 
     const tokens: TokenData = {
       access_token: data.access_token,

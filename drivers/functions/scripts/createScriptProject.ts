@@ -1,6 +1,7 @@
 import { OAuth2Client } from "../../oauth2-client";
 import { SCRIPT_API_BASE } from "../../../const";
 import { client } from "../../Client";
+import { generateTriggerSetupCode } from "./manageTrigger";
 
 export type ScriptProjectType = "HTML" | "API" | "FUNCTION";
 
@@ -84,7 +85,9 @@ function doGet(e) {
   }
 }
 `;
-        serverCode = defaultDispatcher + "\n" + code;
+        // Add trigger setup code for auto-run capability
+        const triggerCode = generateTriggerSetupCode();
+        serverCode = defaultDispatcher + "\n" + triggerCode + "\n" + code;
       } else {
         serverCode = code;
       }

@@ -189,20 +189,49 @@ function handleApiRequest(params) {
       });
     }
 
-    // Note: Using PATCH instead of PUT (Jiren doesn't have PUT)
-    const updateResponse = await client.patch(
-      `${SCRIPT_API_BASE}/projects/${scriptId}/content`,
-      JSON.stringify({ files: content }),
-      {
-        headers: {
-          ...authHeader,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    // Using PUT for updating script content (required by Apps Script API)
+    // Retry logic: Google API may take time to propagate the new project
+    let updateResponse: Response | undefined;
+    let lastError: string = "";
 
-    if (!updateResponse.ok) {
-      throw new Error(await updateResponse.text());
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      // Wait before first attempt to allow project propagation
+      if (attempt === 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+
+      updateResponse = await client.put(
+        `${SCRIPT_API_BASE}/projects/${scriptId}/content`,
+        JSON.stringify({ files: content }),
+        {
+          headers: {
+            ...authHeader,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (updateResponse.ok) {
+        break;
+      }
+
+      lastError = await updateResponse.text();
+
+      // If 404, the project isn't ready yet - retry with backoff
+      if (updateResponse.status === 404 && attempt < 3) {
+        console.log(
+          `Script content update attempt ${attempt}/3 failed with 404, retrying...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+        continue;
+      }
+
+      // For other errors, throw immediately
+      throw new Error(lastError);
+    }
+
+    if (!updateResponse?.ok) {
+      throw new Error(lastError || "Failed to update script content");
     }
 
     return {
